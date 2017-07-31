@@ -32,7 +32,7 @@ public class App
 		}
 
 		Connection conn = (Connection) DriverManager.getConnection(
-				"jdbc:mysql://mytestdb.cxcwtsbed0pr.us-east-1.rds.amazonaws.com:3306/library", "mytestdb", "mytestdb");
+				"jdbc:mysql://testrds.c4uwpmj5ivko.us-east-1.rds.amazonaws.com:3306/library", "rootroot", "rootroot");
 		return conn;
 	}
 
