@@ -37,34 +37,45 @@ public class App
 	}
 
 	public String handler(InputStream input, Context context) throws NumberFormatException, SQLException, ParseException, IOException {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-		JSONParser parser = new JSONParser();
-		JSONObject jsonObject = (JSONObject) parser.parse(reader);
-//		JSONObject params = (JSONObject) jsonObject.get("params");
-//		JSONObject path = (JSONObject) params.get("path");
-//		String authorId = (String) path.get("authorId");
-//		//String method = (String) object.get("http-method");
-//		String sql = "SELECT * FROM library.tbl_author where authorId=?";
-//		Author author = null;
-//		PreparedStatement prepareStatement = getConnection().prepareStatement(sql);
-//		prepareStatement.setInt(1, Integer.parseInt(authorId));
-//		ResultSet resultSet = prepareStatement.executeQuery();
-//		author = new Author();
-//		while (resultSet.next()) {
-//			author.setAuthorId(resultSet.getInt("authorId"));
-//			author.setAuthorName(resultSet.getString("authorName"));
-//		}
-//		System.out.println(author.toString());
-		System.out.println("POST Method");
-		JSONObject body = (JSONObject) jsonObject.get("body-json");
-		String authorId = (String) body.get("authorId");
-		String authorName = (String) body.get("authorName");
-		String sql = "INSERT INTO `library`.`tbl_author` (`authorId`, `authorName`) VALUES (?, ?)";
-		PreparedStatement prepareStatement = getConnection().prepareStatement(sql);
-		prepareStatement.setInt(1, Integer.parseInt(authorId));
-		prepareStatement.setString(2, authorName);
-		prepareStatement.executeUpdate();
-		return null;
+	    JSONParser jsonParser = new JSONParser();
+		JSONObject jsonObject = (JSONObject)jsonParser.parse(new InputStreamReader(input, "UTF-8"));
+		
+		//System.out.println(input.toString());
+		//System.out.println(jsonObject.toJSONString());
+		
+		String sqlCommand = ""; String result = "";
+		//String method = (String) jsonObject.get("http-method");
+		String method = "GET";
+		//JSONObject body = (JSONObject) jsonObject.get("body-json");
+		
+		if ("GET".equals(method)) {
+			System.out.println("GET Method");
+			Long authorId = (Long) jsonObject.get("authorId");
+			sqlCommand = "SELECT * FROM `library`.`tbl_author` WHERE `authorId` = ?";
+			PreparedStatement prepareStatement1 = getConnection().prepareStatement(sqlCommand);
+			prepareStatement1.setLong(1, authorId);
+			ResultSet rs = prepareStatement1.executeQuery();
+			Author author = new Author();
+			while(rs.next()){
+				author.setAuthorId(rs.getInt("authorId"));
+				author.setAuthorName(rs.getString("authorName"));
+			}
+			result = author.toString();
+			System.out.println(result);
+			return result;
+			//return (JSONObject)jsonParser.parse(result);
+		}
+		else if ("POST".equals(method)){
+			System.out.println("POST Method");
+			String authorName = (String) jsonObject.get("authorName");
+			sqlCommand = "INSERT INTO `library`.`tbl_author` (`authorName`) VALUES (?)";
+			PreparedStatement prepareStatement2 = getConnection().prepareStatement(sqlCommand);
+			prepareStatement2.setString(1, authorName);
+			prepareStatement2.executeUpdate();
+		}
+		
+		return "okay";
+		//return (JSONObject)jsonParser.parse("null");
 	}
     
 }
