@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -44,7 +45,7 @@ public class App
 		
 		//System.out.println(input.toString());
 		//System.out.println(jsonObject.toJSONString());
-		String method = "GET";
+		String method = "POST";
 		
 		String sqlCommand = ""; String result = "";
 		String authorName = ""; Integer authorId = -1;
@@ -69,15 +70,18 @@ public class App
 		else if ("POST".equals(method)){
 			System.out.println("POST Method");
 			authorName = (String) jsonObject.get("authorName");
-			sqlCommand = "INSERT INTO `library`.`tbl_author` (`authorName`) OUTPUT Inserted.authorId, Inserted.authorName VALUES (?)";
-			PreparedStatement prepareStatement2 = getConnection().prepareStatement(sqlCommand);
+			sqlCommand = "INSERT INTO tbl_author (authorName) VALUES (?)";
+			//sqlCommand = "INSERT INTO `library`.`tbl_author` (`authorName`) OUTPUT Inserted.authorId, Inserted.authorName VALUES (?)";
+			PreparedStatement prepareStatement2 = getConnection().prepareStatement(sqlCommand, Statement.RETURN_GENERATED_KEYS);
 			prepareStatement2.setString(1, authorName);
-			ResultSet rs = prepareStatement2.executeQuery(); //prepareStatement2.executeUpdate();
+			prepareStatement2.executeUpdate(); 
+			ResultSet rs = prepareStatement2.getGeneratedKeys(); 
+			System.out.println("ResultSet: "+ rs.toString());
 			Author author = new Author();
 			while(rs.next()){
-				author.setAuthorId(rs.getInt("authorId"));
-				author.setAuthorName(rs.getString("authorName"));
+				author.setAuthorId(rs.getInt(1));
 			}
+			author.setAuthorName(authorName);
 			result = author.toString();
 			output.write(result.getBytes(Charset.forName("UTF-8")));
 		}
